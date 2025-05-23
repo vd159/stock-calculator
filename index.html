@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="주식 복리 계산기 - 경제 인플루언서 망고">
+    <meta name="keywords" content="주식, 복리, 계산기, 투자">
+    <meta property="og:title" content="주식 복리 계산기">
+    <meta property="og:description" content="당신의 투자 미래를 계산해보세요!">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주식 복리 계산기 💰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .icon {
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 16px 50px 16px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: #667eea;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        input[type="number"].error {
+            border-color: #ff6b6b;
+            background: #fff5f5;
+        }
+
+        .unit {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-top: 6px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .calculate-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .calculate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .calculate-btn .loading {
+            display: none;
+        }
+
+        .calculate-btn.loading .loading {
+            display: inline;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .final-amount {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin: 15px 0;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            animation: countUp 1s ease-out;
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .profit {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .floating-icon {
+            position: fixed;
+            font-size: 1.5rem;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-icon:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .floating-icon:nth-child(2) { top: 20%; right: 15%; animation-delay: 2s; }
+        .floating-icon:nth-child(3) { bottom: 20%; left: 20%; animation-delay: 4s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .tip {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .reset-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .quick-presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .preset-btn:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .copyright {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            animation: slideUp 0.6s ease-out 0.3s both;
+        }
+
+        .copyright-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .copyright-icon {
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+
+        .creator-name {
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1rem;
+        }
+
+        .copyright-year {
+            opacity: 0.7;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .final-amount {
+                font-size: 2.2rem;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-presets {
+                grid-template-columns: 1fr;
+            }
+
+            .copyright {
+                padding: 15px;
+                margin-top: 15px;
+            }
+
+            .copyright-content {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-icon">💎</div>
+    <div class="floating-icon">📈</div>
+    <div class="floating-icon">🚀</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>💰 주식 복리 계산기</h1>
+            <p>당신의 투자 미래를 계산해보세요!</p>
+        </div>
+
+        <div class="quick-presets">
+            <button class="preset-btn" onclick="setPreset('conservative')">🛡️ 안전형 (5%)</button>
+            <button class="preset-btn" onclick="setPreset('moderate')">⚖️ 중도형 (8%)</button>
+            <button class="preset-btn" onclick="setPreset('aggressive')">🚀 공격형 (12%)</button>
+            <button class="preset-btn" onclick="setPreset('custom')">✨ 맞춤 설정</button>
+        </div>
+
+        <form id="calculatorForm">
+            <div class="form-group">
+                <label for="initialAmount">
+                    <span class="icon">🏦</span>
+                    초기 투자금액
+                </label>
+                <div class="input-wrapper">
+                    <input type="number" id="initialAmount" min="0" step="10000" value="1000000" required>
+                    <span class="unit">원</span>
+                </div>
+                <div class="error-message" id="initialAmountError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="monthlyAmount">
+                    <span class="icon">📅</span>
+                    월 적립금액
+                </label>
+                <div class="input-wrapper">
+                    <input type="number" id="monthlyAmount" min="0" step="10000" value="300000" required>
+                    <span class="unit">원</span>
+                </div>
+                <div class="error-message" id="monthlyAmountError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="annualReturn">
+                    <span class="icon">📊</span>
+                    연평균 수익률
+                </label>
+                <div class="input-wrapper">
+                    <input type="number" id="annualReturn" min="0" max="100" step="0.1" value="7" required>
+                    <span class="unit">%</span>
+                </div>
+                <div class="error-message" id="annualReturnError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="investmentPeriod">
+                    <span class="icon">⏰</span>
+                    투자 기간
+                </label>
+                <div class="input-wrapper">
+                    <input type="number" id="investmentPeriod" min="1" max="50" step="1" value="10" required>
+                    <span class="unit">년</span>
+                </div>
+                <div class="error-message" id="investmentPeriodError"></div>
+            </div>
+
+            <button type="submit" class="calculate-btn" id="calculateBtn">
+                <span class="loading">⏳</span>
+                ✨ 복리의 마법 계산하기 ✨
+            </button>
+
+            <button type="button" class="reset-btn" onclick="resetForm()">
+                🔄 초기화
+            </button>
+        </form>
+
+        <div id="result" class="result">
+            <h3>🎉 계산 결과</h3>
+            <div class="final-amount" id="finalAmount">0원</div>
+            <div class="profit" id="totalProfit">총 수익: 0원</div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalInvested">0원</div>
+                    <div class="stat-label">총 투자금액</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="returnMultiple">0배</div>
+                    <div class="stat-label">투자 수익률</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tip">
+            💡 <strong>팁:</strong> 복리 효과는 시간이 지날수록 더욱 강력해집니다. 꾸준한 투자가 부의 열쇠입니다! 성투하세요 :)
+        </div>
+    </div>
+
+    <div class="copyright">
+        <div class="copyright-content">
+            <span class="copyright-icon">🐶</span>
+            <div>
+                <div class="creator-name">경제 인플루언서 망고</div>
+                <div class="copyright-year">© 2025 All Rights Reserved</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let isCalculating = false;
+
+        // 숫자 포맷팅 함수
+        function formatNumber(number) {
+            if (isNaN(number) || number === null || number === undefined) return '0';
+            return Math.round(number).toLocaleString('ko-KR');
+        }
+
+        // 복리 계산 함수
+        function calculateCompoundInterest(principal, monthlyContribution, annualRate, years) {
+            try {
+                const monthlyRate = annualRate / 100 / 12;
+                const totalMonths = years * 12;
+                
+                // 초기 투자금의 복리 계산
+                const principalGrowth = principal * Math.pow(1 + monthlyRate, totalMonths);
+                
+                // 월 적립금의 복리 계산 (연금 공식)
+                let monthlyGrowth = 0;
+                if (monthlyRate > 0) {
+                    monthlyGrowth = monthlyContribution * 
+                        ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate);
+                } else {
+                    monthlyGrowth = monthlyContribution * totalMonths;
+                }
+                
+                return principalGrowth + monthlyGrowth;
+            } catch (error) {
+                console.error('계산 오류:', error);
+                return 0;
+            }
+        }
+
+        // 입력값 검증 함수
+        function validateInput(fieldId, value, min, max, fieldName) {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(fieldId + 'Error');
+            
+            field.classList.remove('error');
+            errorElement.classList.remove('show');
+            
+            if (value === '' || value === null || isNaN(value)) {
+                showError(field, errorElement, `${fieldName}을(를) 입력해주세요.`);
+                return false;
+            }
+            
+            if (value < min) {
+                showError(field, errorElement, `${fieldName}은(는) ${min.toLocaleString()}${fieldId.includes('Rate') || fieldId.includes('Period') ? '' : '원'} 이상이어야 합니다.`);
+                return false;
+            }
+            
+            if (value > max) {
+                showError(field, errorElement, `${fieldName}은(는) ${max.toLocaleString()}${fieldId.includes('Rate') ? '%' : fieldId.includes('Period') ? '년' : '원'} 이하여야 합니다.`);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // 에러 표시 함수
+        function showError(field, errorElement, message) {
+            field.classList.add('error');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        // 모든 입력값 검증
+        function validateAllInputs() {
+            const initialAmount = parseFloat(document.getElementById('initialAmount').value);
+            const monthlyAmount = parseFloat(document.getElementById('monthlyAmount').value);
+            const annualReturn = parseFloat(document.getElementById('annualReturn').value);
+            const investmentPeriod = parseFloat(document.getElementById('investmentPeriod').value);
+
+            const validInitial = validateInput('initialAmount', initialAmount, 0, 100000000000, '초기 투자금액');
+            const validMonthly = validateInput('monthlyAmount', monthlyAmount, 0, 10000000, '월 적립금액');
+            const validReturn = validateInput('annualReturn', annualReturn, 0, 100, '연평균 수익률');
+            const validPeriod = validateInput('investmentPeriod', investmentPeriod, 1, 50, '투자 기간');
+
+            return validInitial && validMonthly && validReturn && validPeriod;
+        }
+
+        // 결과 업데이트 함수
+        function updateResults(finalAmount, totalInvested, totalProfit, returnMultiple) {
+            // 애니메이션 효과를 위한 카운트업
+            animateNumber('finalAmount', 0, finalAmount, '원', 1000);
+            animateNumber('totalInvested', 0, totalInvested, '원', 800);
+            
+            setTimeout(() => {
+                document.getElementById('totalProfit').textContent = '총 수익: ' + formatNumber(totalProfit) + '원';
+                document.getElementById('returnMultiple').textContent = returnMultiple.toFixed(1) + '배';
+            }, 500);
+
+            // 결과 표시
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.add('show');
+        }
+
+        // 숫자 애니메이션 함수
+        function animateNumber(elementId, start, end, suffix, duration) {
+            const element = document.getElementById(elementId);
+            const increment = (end - start) / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= end) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = formatNumber(current) + suffix;
+            }, 16);
+        }
+
+        // 프리셋 설정 함수
+        function setPreset(type) {
+            const presets = {
+                conservative: { initial: 1000000, monthly: 200000, rate: 5, period: 15 },
+                moderate: { initial: 1000000, monthly: 300000, rate: 8, period: 10 },
+                aggressive: { initial: 1000000, monthly: 500000, rate: 12, period: 8 },
+                custom: { initial: 1000000, monthly: 300000, rate: 7, period: 10 }
+            };
+
+            const preset = presets[type];
+            if (preset) {
+                document.getElementById('initialAmount').value = preset.initial;
+                document.getElementById('monthlyAmount').value = preset.monthly;
+                document.getElementById('annualReturn').value = preset.rate;
+                document.getElementById('investmentPeriod').value = preset.period;
+                
+                // 프리셋 설정 후 자동 계산
+                setTimeout(calculateResults, 300);
+            }
+        }
+
+        // 폼 초기화 함수
+        function resetForm() {
+            document.getElementById('calculatorForm').reset();
+            document.getElementById('result').classList.remove('show');
+            
+            // 기본값 설정
+            document.getElementById('initialAmount').value = 1000000;
+            document.getElementById('monthlyAmount').value = 300000;
+            document.getElementById('annualReturn').value = 7;
+            document.getElementById('investmentPeriod').value = 10;
+            
+            // 에러 메시지 제거
+            const errorMessages = document.querySelectorAll('.error-message');
+            const inputs = document.querySelectorAll('input[type="number"]');
+            
+            errorMessages.forEach(error => error.classList.remove('show'));
+            inputs.forEach(input => input.classList.remove('error'));
+        }
+
+        // 메인 계산 함수
+        function calculateResults() {
+            if (isCalculating) return;
+            
+            if (!validateAllInputs()) return;
+            
+            isCalculating = true;
+            const btn = document.getElementById('calculateBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                const initialAmount = parseFloat(document.getElementById('initialAmount').value);
+                const monthlyAmount = parseFloat(document.getElementById('monthlyAmount').value);
+                const annualReturn = parseFloat(document.getElementById('annualReturn').value);
+                const investmentPeriod = parseFloat(document.getElementById('investmentPeriod').value);
+                
+                const finalAmount = calculateCompoundInterest(
+                    initialAmount, 
+                    monthlyAmount, 
+                    annualReturn, 
+                    investmentPeriod
+                );
+                
+                const totalInvested = initialAmount + (monthlyAmount * investmentPeriod * 12);
+                const totalProfit = finalAmount - totalInvested;
+                const returnMultiple = totalInvested > 0 ? finalAmount / totalInvested : 0;
+                
+                updateResults(finalAmount, totalInvested, totalProfit, returnMultiple);
+                
+                // 버튼 상태 복원
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                isCalculating = false;
+            }, 500);
+        }
+
+        // 이벤트 리스너 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            // 폼 제출 이벤트
+            document.getElementById('calculatorForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                calculateResults();
+            });
+
+            // 실시간 입력 검증
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // 실시간 검증 (필요시)
+                    this.classList.remove('error');
+                    const errorElement = document.getElementById(this.id + 'Error');
+                    if (errorElement) {
+                        errorElement.classList.remove('show');
+                    }
+                });
+
+                input.addEventListener('blur', function() {
+                    // 포커스 해제시 검증
+                    const value = parseFloat(this.value);
+                    const min = parseFloat(this.min) || 0;
+                    const max = parseFloat(this.max) || Infinity;
+                    const fieldName = this.previousElementSibling.textContent.trim();
+                    
+                    if (this.value !== '') {
+                        validateInput(this.id, value, min, max, fieldName);
+                    }
+                });
+            });
+
+            // 엔터키로 계산 실행
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        calculateResults();
+                    }
+                });
+            });
+
+            // 초기 계산 실행
+            calculateResults();
+        });
+
+        // 페이지 언로드 전 확인 (선택사항)
+        window.addEventListener('beforeunload', function(e) {
+            // 중요한 계산 중이면 확인 메시지 표시
+            if (isCalculating) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>
